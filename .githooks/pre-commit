@@ -1,0 +1,79 @@
+#!/bin/sh
+#
+# Blocks commits containing credentials.
+#
+# Rationale: this repo holds Supabase service-role keys, Google OAuth secrets and a
+# Telegram bot token in .env.local. A single accidental commit of any of them is a
+# full compromise of the database (service-role bypasses RLS entirely). Filename-based
+# ignores are not enough — secrets get pasted into scratch files with arbitrary names.
+#
+# Install:  git config core.hooksPath .githooks
+# Bypass:   git commit --no-verify   (do not do this)
+
+set -e
+
+staged=$(git diff --cached --name-only --diff-filter=ACM)
+[ -z "$staged" ] && exit 0
+
+fail=0
+
+report() {
+  if [ "$fail" -eq 0 ]; then
+    echo ""
+    echo "  COMMIT BLOCKED — possible credential detected"
+    echo ""
+  fi
+  echo "    $1"
+  echo "      $2"
+  fail=1
+}
+
+for file in $staged; do
+  [ -f "$file" ] || continue
+
+  case "$file" in
+    .env|.env.*)
+      if [ "$file" != ".env.example" ]; then
+        report "$file" "env files must never be committed"
+        continue
+      fi
+      ;;
+  esac
+
+  # Skip binaries and lockfiles.
+  case "$file" in
+    *.png|*.jpg|*.jpeg|*.gif|*.ico|*.woff|*.woff2|*.pdf|package-lock.json) continue ;;
+  esac
+
+  content=$(git show ":$file" 2>/dev/null || true)
+  [ -z "$content" ] && continue
+
+  # Supabase publishable keys are safe by design; secret/service-role keys are not.
+  echo "$content" | grep -qE 'sb_secret_[A-Za-z0-9_-]{20,}' \
+    && report "$file" "Supabase secret key (sb_secret_…)"
+
+  # Legacy Supabase service_role JWT.
+  echo "$content" | grep -qE 'eyJ[A-Za-z0-9_-]{10,}\.eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}' \
+    && report "$file" "JWT — likely a legacy service_role key"
+
+  # Google OAuth client secret.
+  echo "$content" | grep -qE 'GOCSPX-[A-Za-z0-9_-]{20,}' \
+    && report "$file" "Google OAuth client secret (GOCSPX-…)"
+
+  # Telegram bot token.
+  echo "$content" | grep -qE '[0-9]{8,12}:AA[A-Za-z0-9_-]{30,}' \
+    && report "$file" "Telegram bot token"
+
+  # Postgres URI carrying an inline password.
+  echo "$content" | grep -qE 'postgres(ql)?://[^:@/[:space:]]+:[^@/[:space:]]+@' \
+    && report "$file" "Postgres connection string with inline password"
+done
+
+if [ "$fail" -ne 0 ]; then
+  echo ""
+  echo "  Move the value into .env.local (gitignored) and reference it via process.env."
+  echo ""
+  exit 1
+fi
+
+exit 0

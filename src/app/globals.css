@@ -1,0 +1,130 @@
+@import "tailwindcss";
+
+/*
+ * Synapse design tokens — Notion dark, single theme.
+ *
+ * There is deliberately no light palette and no theme toggle. Every colour is
+ * defined exactly once here; components reference tokens, never raw hex.
+ *
+ * Notion's dark UI is built from translucent white over two flat greys rather
+ * than from a ramp of opaque greys. Keeping that property matters: it is why
+ * overlapping surfaces (menu over card over page) read as depth without any
+ * shadow, and it is why borders stay visible on every surface.
+ */
+@theme {
+  /* Surfaces */
+  --color-bg: #191919;
+  --color-bg-sidebar: #202020;
+  --color-bg-elevated: #252525;
+  --color-bg-overlay: rgba(15, 15, 15, 0.6);
+
+  /* Interaction states — translucent so they compose over any surface */
+  --color-bg-hover: rgba(255, 255, 255, 0.055);
+  --color-bg-active: rgba(255, 255, 255, 0.08);
+  --color-bg-selected: rgba(35, 131, 226, 0.2);
+  --color-bg-input: rgba(255, 255, 255, 0.055);
+
+  /* Text — opacity-based, matching Notion's hierarchy */
+  --color-text: rgba(255, 255, 255, 0.81);
+  --color-text-secondary: rgba(255, 255, 255, 0.46);
+  --color-text-tertiary: rgba(255, 255, 255, 0.28);
+
+  /* Lines */
+  --color-border: rgba(255, 255, 255, 0.094);
+  --color-border-strong: rgba(255, 255, 255, 0.16);
+
+  /* Accent */
+  --color-accent: #2383e2;
+  --color-accent-hover: #1a6dbd;
+  --color-accent-text: #ffffff;
+
+  /* Notion's named palette. Used for categories, goal horizons and tags.
+     Each has a translucent fill and a matching readable text tone. */
+  --color-tag-gray: rgba(255, 255, 255, 0.094);
+  --color-tag-gray-text: rgba(255, 255, 255, 0.6);
+  --color-tag-brown: #4a3228;
+  --color-tag-brown-text: #ba856f;
+  --color-tag-orange: #5c3b23;
+  --color-tag-orange-text: #c77d48;
+  --color-tag-yellow: #564328;
+  --color-tag-yellow-text: #ca9849;
+  --color-tag-green: #2b4335;
+  --color-tag-green-text: #529e72;
+  --color-tag-blue: #283a4e;
+  --color-tag-blue-text: #5e94c7;
+  --color-tag-purple: #3c2d49;
+  --color-tag-purple-text: #9d71c5;
+  --color-tag-pink: #4e2c3c;
+  --color-tag-pink-text: #d16d9d;
+  --color-tag-red: #522e2a;
+  --color-tag-red-text: #df5452;
+
+  /* Semantic aliases — status, pace and adherence readouts.
+     Mapped onto the tag palette so the whole app stays one colour system. */
+  --color-success: #529e72;
+  --color-warning: #ca9849;
+  --color-danger: #df5452;
+
+  /* Notion uses tight radii; anything softer reads as a different product. */
+  --radius-sm: 3px;
+  --radius-md: 5px;
+  --radius-lg: 8px;
+
+  --font-sans:
+    var(--font-inter), ui-sans-serif, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", Helvetica, Arial, sans-serif;
+  --font-mono:
+    var(--font-jetbrains-mono), ui-monospace, SFMono-Regular, Menlo, Consolas,
+    monospace;
+}
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Notion's scrollbars are nearly invisible until hovered. */
+@layer base {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.16) transparent;
+  }
+
+  *::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.16);
+    border: 3px solid transparent;
+    background-clip: content-box;
+    border-radius: 6px;
+  }
+
+  *::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(255, 255, 255, 0.28);
+  }
+
+  /* Visible focus only for keyboard users. The 15-minute grid is heavily
+     mouse-driven, and focus rings on every click would be constant noise. */
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 1px;
+  }
+
+  ::selection {
+    background-color: rgba(35, 131, 226, 0.35);
+  }
+}
