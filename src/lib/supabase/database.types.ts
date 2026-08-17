@@ -446,6 +446,39 @@ export type Database = {
       }
     }
     Functions: {
+      adherence_series: {
+        Args: { p_from: string; p_to: string; p_user_id?: string }
+        Returns: {
+          coverage: number
+          day: string
+          expected: number
+          fidelity: number
+          honoured: number
+          logged: number
+          planned: number
+        }[]
+      }
+      allocation: {
+        Args: { p_from: string; p_to: string; p_user_id?: string }
+        Returns: {
+          actual_hours: number
+          category_id: string
+          category_name: string
+          is_productive: boolean
+          logged_hours: number
+          share: number
+        }[]
+      }
+      allocation_summary: {
+        Args: { p_from: string; p_to: string; p_user_id?: string }
+        Returns: {
+          logged_hours: number
+          productive_hours: number
+          productive_share: number
+          unclassified_hours: number
+          unproductive_hours: number
+        }[]
+      }
       blocked_goals: {
         Args: never
         Returns: {
@@ -480,6 +513,21 @@ export type Database = {
           fidelity: number
           honoured: number
           planned: number
+        }[]
+      }
+      effort_outcome_series: {
+        Args: {
+          p_from: string
+          p_goal_id: string
+          p_to: string
+          p_user_id?: string
+        }
+        Returns: {
+          cumulative_effort_hours: number
+          cumulative_outcome: number
+          day: string
+          effort_hours: number
+          outcome_value: number
         }[]
       }
       get_day_grid: {
@@ -541,6 +589,22 @@ export type Database = {
           required_rate: number
           status: string
           target_value: number
+        }[]
+      }
+      goals_needing_attention: {
+        Args: { p_as_of: string; p_user_id?: string }
+        Returns: {
+          achieved_rate: number
+          blocker_titles: string[]
+          days_remaining: number
+          due_date: string
+          goal_id: string
+          horizon: Database["public"]["Enums"]["goal_horizon"]
+          is_blocked: boolean
+          pace_ratio: number
+          required_rate: number
+          status: string
+          title: string
         }[]
       }
       planning_bias: {

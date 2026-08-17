@@ -1,6 +1,7 @@
 import { TriangleAlert } from "lucide-react";
 import Link from "next/link";
 
+import { Figure, Panel } from "@/components/ui/panel";
 import type {
   Goal,
   OutcomeRow,
@@ -16,7 +17,6 @@ import {
   PACE_TONE,
   UNSUMMED_SENTENCE,
 } from "../display";
-import { Figure, Panel } from "./panel";
 
 /*
  * The three rollup cards.

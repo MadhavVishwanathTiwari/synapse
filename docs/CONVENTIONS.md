@@ -91,6 +91,27 @@ exists to be unit-tested and to render, not to compute what the bot reads.
 Every such helper gets Vitest tests against hand-computed fixtures. These are
 pure functions of known inputs; there is no excuse for approximate testing.
 
+## Charts
+
+- **Series colours are `--color-series-1..4`,** assigned in order and never
+  cycled past the fourth. They are not the tag palette (which fails the
+  colourblind separation gate as a line set) and not the status palette (which
+  means something). See ADR 021.
+- **Colour follows the entity, not its rank.** A goal keeps its colour when the
+  selection changes.
+- **Never a second y-axis.** Two measures in different units are two plots.
+- **`connectNulls` stays false, and nothing maps a null to zero.** The SQL
+  returns null where a metric is undefined — fidelity on a day with no plan,
+  outcome on a day with no entry — and a line drawn across that gap asserts a
+  measurement nobody took. `src/lib/metrics/series.ts` is where that rule is
+  enforced and tested; there is no `?? 0` in it, deliberately.
+- **`type="linear"`, not `"monotone"`.** A smoothed curve puts the line at values
+  between the measured points.
+- **Every chart has a table twin.** A tooltip may enhance a value; it must never
+  be the only way to read one.
+- Gridlines are hairline and solid, one step off the surface. Text wears text
+  tokens, never a series colour.
+
 ## Styling
 
 - Tokens only. No raw hex outside `globals.css`.
@@ -111,6 +132,21 @@ pure functions of known inputs; there is no excuse for approximate testing.
   against a seeded goal.
 - More generally: a schema that validates harder than the database is inventing a
   constraint the schema never had. Mirror the constraint, do not exceed it.
+
+## Client Components
+
+- **A constant a Server Component needs must not live in a `"use client"`
+  module.** Every export of a client module becomes a client *reference* when a
+  server module imports it, so the server receives an opaque object where it
+  expected the value. There is no error: it coerces. A number used as
+  `slice(0, n)` becomes `NaN` and the slice silently returns `[]`.
+
+  This shipped once in Phase 3 — `MAX_SELECTED` lived beside the divergence
+  chart, the dashboard's goal picker defaulted correctly, and every explicit
+  selection came back empty with nothing in any log. Shared constants go in the
+  route's `display.ts`, which is neither client nor server.
+
+  It is the mirror of the `"use server"` rule below, and it fails more quietly.
 
 ## Server Actions
 

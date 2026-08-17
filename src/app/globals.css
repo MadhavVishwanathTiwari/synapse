@@ -65,6 +65,33 @@
   --color-warning: #ca9849;
   --color-danger: #df5452;
 
+  /*
+   * Chart series colours.
+   *
+   * DELIBERATELY NOT the tag palette. Those tones were chosen to sit legibly on
+   * a translucent tag fill, and as a categorical series set on the elevated
+   * surface they fail on three counts at once — blue drops below the chroma
+   * floor and reads grey, yellow sits outside the lightness band, and the
+   * green/yellow pair separates by only ΔE 6.1 under protanopia, which is
+   * inside the band where two lines are indistinguishable to a colourblind
+   * reader.
+   *
+   * These four are validated as a set against #252525: every slot inside the
+   * dark lightness band, above the chroma floor, above 3:1 contrast, and worst
+   * adjacent pair ΔE 8.4 protan / 19.8 normal. Assign them in order and never
+   * cycle past the fourth — fold the tail into an "Other" or facet instead.
+   *
+   * They are also never used for status. Success, warning and danger above mean
+   * something; a series colour only identifies which line is which.
+   */
+  --color-series-1: #3987e5;
+  --color-series-2: #d95926;
+  --color-series-3: #199e70;
+  --color-series-4: #c98500;
+
+  /* One step off the surface. Gridlines are hairline and solid, never dashed. */
+  --color-chart-grid: rgba(255, 255, 255, 0.07);
+
   /* Notion uses tight radii; anything softer reads as a different product. */
   --radius-sm: 3px;
   --radius-md: 5px;

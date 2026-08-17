@@ -67,24 +67,53 @@ All three carry into Phase 3, where they have somewhere coherent to live.
 
 ---
 
-## Phase 3 — Dashboard ⬅ next
+## Phase 3 — Dashboard ✅
 
-- Coverage / fidelity / allocation
-- Goal pace with projection bands from rate variance
-- Effort-vs-outcome divergence charts
-- Conversion calibration surface
-- Goal drift report
-- Critical-path warnings
-- Week view over the time ledger *(carried from Phase 2)*
+Where the graph and the ledger finally meet.
+
+- `allocation`, `allocation_summary` — the third ADR 007 adherence number
+- `adherence_series` — coverage and fidelity per day, calling the per-day
+  functions rather than restating them
+- `effort_outcome_series` — the ADR 004 divergence, two series never combined
+- `goals_needing_attention` — a selection over `goal_pace` and `blocked_goals`
+- Today's three numbers, each with its denominator; the 7/30/90 adherence trend;
+  goals needing attention; effort against outcome; allocation and planning bias
+- Week view over the ledger at `/week` *(carried from Phase 2)*
 - Planning-bias surface per category *(carried from Phase 2)*
 - Blocked-task warnings from `blocked_goals()` *(carried from Phase 2)*
 
-**Acceptance:** every figure traces to a SQL view; a Playwright run asserts the
-rendered numbers match direct SQL against those views.
+**Acceptance:** every figure traces to a SQL function or view — a grep of the
+dashboard and week directories finds no arithmetic that is not formatting;
+`supabase/tests/phase-3.sql` asserts the new functions against hand-computed
+figures, including that a day with no plan is a null row *inside* the series;
+every undefined metric renders as words saying why.
+
+**On Playwright.** The original acceptance line here named a Playwright run
+asserting rendered numbers against direct SQL. It was not carried into
+`docs/phases/phase-3.md` and did not ship: Playwright is not a dependency, and
+the property it would check is covered from both ends already — the SQL
+assertions pin the figures, and the grep proves the UI cannot have transformed
+them. Revisit if a figure ever disagrees with its function in the browser; that
+would be evidence the pairing is not enough.
+
+**Deferred, and why.** Three bullets from the original sketch were not in
+`docs/phases/phase-3.md` and did not ship:
+
+- *Projection bands from rate variance* — `goal_pace` reports one EWMA rate, not
+  a distribution. Bands need a variance term the function does not compute, and
+  inventing one from three progress entries would be the exact fabrication hard
+  rule 8 exists to prevent.
+- *Conversion calibration surface* — comparing declared conversion factors
+  against observed ones needs a history of both. The declarations exist since
+  Phase 1; the observations arrive as `goal_progress` accumulates.
+- *Goal drift report* — `goal_revisions` has the data, but a drift report is a
+  review artefact, and Phase 8 is where revisions are legitimately made.
+
+All three carry to Phase 8, where they have somewhere coherent to live.
 
 ---
 
-## Phase 4 — Calendar
+## Phase 4 — Calendar ⬅ next
 
 - Google OAuth, refresh token encrypted at rest
 - `gcal-sync` Edge Function, `syncToken` incremental, `pg_cron` every 10 min
@@ -142,6 +171,11 @@ trend does not move materially on a single outlier reading.
 Weekly / monthly / quarterly / annual review flows that walk the graph, prompt
 direct outcome entry for long-horizon goals, and surface calibration and drift.
 This is where decade goals get legitimately revised.
+
+- Conversion calibration surface *(carried from Phase 3)*
+- Goal drift report over `goal_revisions` *(carried from Phase 3)*
+- Pace projection bands, once there is enough history for a variance term
+  *(carried from Phase 3)*
 
 **Acceptance:** a revision made during review is logged and historical pace is
 unaffected.

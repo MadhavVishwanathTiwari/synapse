@@ -20,6 +20,19 @@ const TAG: Record<NotionColor, string> = {
   red: "bg-tag-red text-tag-red-text",
 };
 
+/** The fill alone, for a cell that carries no text — the week grid's slots. */
+export const TAG_BG: Record<NotionColor, string> = {
+  gray: "bg-tag-gray",
+  brown: "bg-tag-brown",
+  orange: "bg-tag-orange",
+  yellow: "bg-tag-yellow",
+  green: "bg-tag-green",
+  blue: "bg-tag-blue",
+  purple: "bg-tag-purple",
+  pink: "bg-tag-pink",
+  red: "bg-tag-red",
+};
+
 /** The same nine hues as a foreground-only rule, for dots and left borders. */
 export const TAG_TEXT: Record<NotionColor, string> = {
   gray: "text-tag-gray-text",

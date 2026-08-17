@@ -305,3 +305,99 @@ SQL assertions pin the 92/100 cases (`America/New_York`, 2026-03-08 and
 2026-11-01). Alignment survives the jump because every real DST offset is a whole
 number of quarter hours; there is a test for that too, since the check constraint
 would reject the rows outright if it ever stopped being true.
+
+## 019 — Allocation is a destination report, not a score
+
+**Decision.** `allocation()` and `allocation_summary()` report where logged hours
+went, split by `categories.is_productive`. Unclassified time — slots with no
+category — is kept as its own row, counted in the denominator, and reported with
+`is_productive` **null** rather than false. No UI surface decorates the figure
+with a verdict.
+
+**Why.** `is_productive` was never a quality judgement. It separates intentional
+investment from maintenance and leisure, and it marks Sleep, Meals and Health as
+productive on purpose. The moment the number is presented as a grade, the user
+starts optimising against it — and the thing they would be optimising is a
+classification they made up, not an outcome. The dashboard's job here is to
+answer "where did the hours go", which is a question with an answer, rather than
+"was that a good day", which is not one this system can compute.
+
+The null flag on unclassified time is the same principle one level down.
+"Unclassified" and "unproductive" are different claims: the first says nothing
+was recorded, the second says something was. Collapsing them would invent a
+judgement out of an absence, and it would do it silently on exactly the rows the
+user has not got around to thinking about.
+
+Keeping that row in the denominator follows from the same place. Excluding it
+would raise `productive_share` by hiding the part of the range the user never
+classified — the part most likely to be the answer.
+
+**Consequences.** Three columns instead of one: productive, unproductive, and
+unclassified, all visible. `ALLOCATION_CAVEAT` in the dashboard's display module
+travels with the number everywhere it appears. A SQL assertion and a Vitest
+fixture both pin the unclassified case, because it is the one a future
+refactor would most naturally "tidy up" into a boolean.
+
+## 020 — The divergence series uses measured progress, not the outcome rollup
+
+**Decision.** `effort_outcome_series()` reads the goal's own `goal_progress`
+rows for its outcome series. It does not call `goal_outcome_rollup()`.
+
+**Why.** ADR 004 established that outcomes only roll up one or two hops and only
+where the units reconcile, and that the rollup must report every subtree it
+declined to sum — the refusal list is the contract, not a diagnostic. Running
+that per day would mean either a refusal list per day, which no chart can render
+honestly, or dropping it, which turns a carefully-guarded number into a confident
+one. Neither is acceptable in a series whose whole purpose is to be trusted
+against the effort line beside it.
+
+The goal detail page already keeps "Measured" and "Derived from children" as two
+separate figures for the same reason, and says in as many words that they are not
+added. The chart inherits that separation rather than quietly resolving it.
+
+**Consequences.** The outcome line is labelled "cumulative measured progress in
+this range" and means exactly that: what the user entered against this goal. A
+parent goal whose children are doing the work shows effort climbing with a flat
+outcome — which is the correct reading of "nothing has been measured here", and
+is also indistinguishable on the chart from "the strategy is not working". The
+distinction lives in whether progress is being entered at all, which is what the
+Phase 8 review flows exist to prompt.
+
+`outcome_value` is null on a day with no entry rather than zero, and
+`cumulative_outcome` is null until the first entry in the range, so a goal that
+was never measured draws no line at all instead of a flat zero.
+
+## 021 — Charts get their own colour slots, and never a second y-axis
+
+**Decision.** Four validated categorical series colours live in `globals.css` as
+`--color-series-1..4`, separate from both the tag palette and the status
+palette. No chart in this app plots two measures on two y-scales.
+
+**Why, on the palette.** The Notion tag tones were chosen to sit legibly on a
+translucent tag fill, and they fail as a categorical line palette on the elevated
+surface: blue drops below the chroma floor and reads grey, yellow falls outside
+the dark lightness band, and green against yellow separates by ΔE 6.1 under
+protanopia — inside the range where a colourblind reader cannot tell two lines
+apart. The four slots that shipped were validated as a set against `#252525`:
+worst adjacent pair ΔE 8.4 protan and 19.8 normal-vision, every slot above 3:1
+contrast. Past four the palette stops being separable, so the divergence chart
+caps its selection at four goals rather than generating a fifth hue.
+
+Series colour is assigned by a goal's stable position in the option list, never
+by its rank in the current selection. A reader who learned which colour a goal is
+must not have it repainted when they filter something else out.
+
+**Why, on the second axis.** Two scales on one plot align at an arbitrary point,
+so the chart invents a relationship the data does not contain — and this is
+precisely the chart where that would do the most damage, since the entire claim
+of ADR 004 is that effort and outcome must be read as two independent series.
+Effort is hours for every goal and shares one axis legitimately. Outcomes are in
+the user's own units, so they get one small plot each, each with its own axis
+labelled in that goal's unit. Indexing them to a common base would make the
+picture look right while asserting a comparison that cannot be made.
+
+**Consequences.** Status colours stay reserved: `--color-success`, `-warning`
+and `-danger` mean something, and a series colour only identifies which line is
+which. Text never wears a series colour — the swatch beside a label carries
+identity, because a hue tuned for a 2px line is not legible as 11px type. Every
+chart ships a table twin, so no value is reachable only by hovering.

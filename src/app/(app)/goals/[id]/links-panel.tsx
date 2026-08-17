@@ -6,13 +6,13 @@ import * as React from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/empty-state";
+import { Panel } from "@/components/ui/panel";
 import { InfoTooltip } from "@/components/ui/tooltip";
 import type { Goal, GoalLinkType } from "@/lib/supabase/types";
 
 import { deleteLink, INITIAL } from "../actions";
 import { formatNumber, formatWeight, HORIZON_LABEL } from "../display";
 import { type Budgets, LinkEditor } from "./link-editor";
-import { Panel } from "./panel";
 
 export type LinkRow = {
   parent_id: string;

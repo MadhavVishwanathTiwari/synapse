@@ -2,7 +2,10 @@ import * as React from "react";
 
 import { cn } from "@/lib/utils";
 
-/** A titled section on the goal detail page. Local to this route by design. */
+/**
+ * A titled section. Written for the goal detail page in Phase 1 and promoted
+ * here in Phase 3, when the dashboard needed the same shape.
+ */
 export function Panel({
   title,
   actions,

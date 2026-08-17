@@ -2,6 +2,7 @@
 
 import {
   CalendarDays,
+  CalendarRange,
   Dumbbell,
   LayoutDashboard,
   ListChecks,
@@ -32,6 +33,7 @@ const NAV: NavItem[] = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, phase: 3 },
   { href: "/goals", label: "Goals", icon: Target, phase: 1 },
   { href: "/today", label: "Today", icon: ListChecks, phase: 2 },
+  { href: "/week", label: "Week", icon: CalendarRange, phase: 3 },
   { href: "/calendar", label: "Calendar", icon: CalendarDays, phase: 4 },
   { href: "/finance", label: "Finance", icon: Wallet, phase: 6 },
   { href: "/gym", label: "Gym", icon: Dumbbell, phase: 7 },
@@ -39,7 +41,7 @@ const NAV: NavItem[] = [
 ];
 
 /** Routes that actually exist today. Update as each phase lands. */
-const BUILT = new Set(["/dashboard", "/goals", "/today", "/settings"]);
+const BUILT = new Set(["/dashboard", "/goals", "/today", "/week", "/settings"]);
 
 export function Sidebar() {
   const pathname = usePathname();

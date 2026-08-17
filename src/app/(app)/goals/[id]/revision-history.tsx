@@ -1,8 +1,8 @@
 import { EmptyState } from "@/components/ui/empty-state";
+import { Panel } from "@/components/ui/panel";
 import type { GoalRevision } from "@/lib/supabase/types";
 
 import { formatDate } from "../display";
-import { Panel } from "./panel";
 
 const FIELD_LABEL: Record<string, string> = {
   target_value: "Target",

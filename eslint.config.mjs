@@ -56,6 +56,24 @@ const eslintConfig = defineConfig([
                 "Read pace from the goal_pace RPC so the dashboard and the nudge engine " +
                 "cannot disagree. This module exists to be unit-tested.",
             },
+            {
+              name: "@/lib/metrics/adherence",
+              message:
+                "Read coverage and fidelity from the day_coverage / day_fidelity / " +
+                "adherence_series RPCs. This module exists to be unit-tested.",
+            },
+            {
+              name: "@/lib/metrics/allocation",
+              message:
+                "Read allocation from the allocation / allocation_summary RPCs. " +
+                "This module exists to be unit-tested.",
+            },
+            /*
+             * @/lib/metrics/series is deliberately NOT restricted. It computes
+             * no metric — it relabels and merges rows the SQL already produced,
+             * and it is where the "a null must survive to the axis" rule is
+             * enforced and tested. The charts are supposed to import it.
+             */
           ],
         },
       ],

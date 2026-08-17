@@ -203,3 +203,96 @@ export type PaceStatus =
   | "behind"
   | "on_track"
   | "ahead";
+
+/* ------------------------------------------------------------------ phase 3 */
+
+/*
+ * Same remedy again, and the stakes are highest here. The dashboard's whole job
+ * is to distinguish "zero" from "undefined", and every one of the columns below
+ * that carries that distinction arrives from the generator typed `number`. A
+ * `share: number` would let a range with nothing logged render "0%", and a
+ * `fidelity: number` would let a chart draw a line straight through a day that
+ * had no plan. These aliases are what stops it; use them at every query
+ * boundary, without exception.
+ */
+
+/**
+ * One category's hours over a range.
+ *
+ * `is_productive` is null on the uncategorised row — there is no flag on
+ * unclassified time, and rendering it as "not productive" would invent a
+ * judgement the data never carried. `share` is null when nothing was logged.
+ */
+export type AllocationRow = {
+  category_id: string | null;
+  category_name: string | null;
+  is_productive: boolean | null;
+  actual_hours: number;
+  /** The range total, repeated on every row so the denominator is printable. */
+  logged_hours: number;
+  share: number | null;
+};
+
+/** `productive_share` is null when nothing was logged: no hours, no allocation. */
+export type AllocationSummary = {
+  productive_hours: number;
+  unproductive_hours: number;
+  /** Left in the denominator and reported separately, never folded into either side. */
+  unclassified_hours: number;
+  logged_hours: number;
+  productive_share: number | null;
+};
+
+/**
+ * One day of the adherence trend.
+ *
+ * `coverage` is 0 on a day that was never logged — a real measurement.
+ * `fidelity` is null on a day with no plan, and the row is present rather than
+ * missing so the chart can break the line instead of interpolating across it.
+ */
+export type AdherenceSeriesRow = {
+  day: string;
+  logged: number;
+  expected: number;
+  coverage: number | null;
+  planned: number;
+  honoured: number;
+  fidelity: number | null;
+};
+
+/**
+ * One day of the divergence view. The two series are never combined.
+ *
+ * `effort_hours` is a true zero on a day with no slots. `outcome_value` is null
+ * on a day with no entry, which is not an entry of zero, and
+ * `cumulative_outcome` stays null until the first measurement in the range.
+ */
+export type EffortOutcomeRow = {
+  day: string;
+  effort_hours: number;
+  cumulative_effort_hours: number;
+  outcome_value: number | null;
+  cumulative_outcome: number | null;
+};
+
+/** A goal that is overdue, stalled, behind, or waiting on a prerequisite. */
+export type AttentionRow = {
+  goal_id: string;
+  title: string;
+  horizon: GoalHorizon;
+  due_date: string | null;
+  days_remaining: number | null;
+  required_rate: number | null;
+  achieved_rate: number | null;
+  pace_ratio: number | null;
+  status: PaceStatus;
+  is_blocked: boolean;
+  blocker_titles: string[] | null;
+};
+
+/** The raw generated shapes, for the cast at each query boundary. */
+export type AllocationRowRaw = FnRow<"allocation">;
+export type AllocationSummaryRaw = FnRow<"allocation_summary">;
+export type AdherenceSeriesRowRaw = FnRow<"adherence_series">;
+export type EffortOutcomeRowRaw = FnRow<"effort_outcome_series">;
+export type AttentionRowRaw = FnRow<"goals_needing_attention">;

@@ -7,11 +7,11 @@ import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Panel } from "@/components/ui/panel";
 import type { GoalProgress } from "@/lib/supabase/types";
 
 import { INITIAL, upsertProgress } from "../actions";
 import { formatNumber, formatShortDate, today } from "../display";
-import { Panel } from "./panel";
 
 /**
  * Daily progress entry and a bar of the last 30 days.
